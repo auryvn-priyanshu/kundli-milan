@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Divya-Data | Ashtakoot Milan</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --blush-pink: #FCE7F3;
+            --soft-lilac: #EDE9FE;
+            --sky-blue: #E0F2FE;
+            --cream-white: #FFFBFA;
+            --deep-purple: #6D28D9;
+            --text-main: #2D3748;
+            --gradient-primary: linear-gradient(135deg, #F9A8D4 0%, #C4B5FD 100%);
+            --glass: rgba(255, 255, 255, 0.7);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--cream-white);
+            background-image: 
+                radial-gradient(at 0% 0%, var(--blush-pink) 0, transparent 50%),
+                radial-gradient(at 100% 100%, var(--sky-blue) 0, transparent 50%),
+                radial-gradient(at 50% 50%, var(--soft-lilac) 0, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+            animation: fadeInDown 1s ease;
+        }
+
+        .brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #db2777, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .tagline {
+            font-size: 0.9rem;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.07);
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: transform 0.3s ease;
+        }
+
+        /* Input Styles */
+        .grid-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-inputs { grid-template-columns: 1fr; }
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            color: #4A5568;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #E2E8F0;
+            background: rgba(255, 255, 255, 0.8);
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input:focus {
+            border-color: #C4B5FD;
+            box-shadow: 0 0 0 4px rgba(196, 181, 253, 0.2);
+        }
+
+        .btn-calculate {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 15px;
+            background: var(--gradient-primary);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 10px 15px -3px rgba(249, 168, 212, 0.4);
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 20px -5px rgba(249, 168, 212, 0.5);
+        }
+
+        .btn-calculate:active { transform: translateY(0); }
+
+        /* Results Display */
+        #results {
+            display: none;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .score-display {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .total-points {
+            font-size: 4rem;
+            font-weight: 800;
+            color: var(--deep-purple);
+            line-height: 1;
+        }
+
+        .out-of {
+            font-size: 1.2rem;
+            color: #A0AEC0;
+        }
+
+        .verdict-badge {
+            display: inline-block;
+            padding: 8px 24px;
+            border-radius: 50px;
+            font-weight: 700;
+            margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .badge-success { background: #DCFCE7; color: #166534; }
+        .badge-warning { background: #FEF3C7; color: #92400E; }
+        .badge-danger { background: #FEE2E2; color: #991B1B; }
+
+        .guna-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .guna-table th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 2px solid #F1F5F9;
+            font-size: 0.8rem;
+            color: #94A3B8;
+        }
+
+        .guna-table td {
+            padding: 15px 12px;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .point-pill {
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        /* Chart Area */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        /* Loading Overlay */
+        #loader {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .cosmic-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--blush-pink);
+            border-top: 4px solid var(--deep-purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+
+        .footer {
+            text-align: center;
+            padding: 40px;
+            font-size: 0.8rem;
+            color: #A0AEC0;
+        }
+
+        .probability-meter {
+            height: 12px;
+            background: #E2E8F0;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .probability-fill {
+            height: 100%;
+            transition: width 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: var(--gradient-primary);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="cosmic-spinner"></div>
+        <p style="margin-top: 15px; color: var(--deep-purple); font-weight: 600;">Reading the Stars...</p>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="brand">DIVYA-DATA</div>
+            <div class="tagline">Astrology & Cosmic Insights</div>
+        </header>
+
+        <section class="glass-card">
+            <h2 style="margin-bottom: 25px; font-family: 'Playfair Display';">Kundli Milan</h2>
+            
+            <form id="milanForm">
+                <div class="grid-inputs">
+                    <!-- Partner 1 -->
+                    <div>
+                        <h3 style="font-size: 0.9rem; margin-bottom: 15px; color: #db2777;">Partner One (Groom)</h3>
+                        <div class="input-group">
+                            <label>Full Name</label>
+                            <input type="text" placeholder="Enter Name" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Birth Date</label>
+                            <input type="date" id="p1_date" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Birth Time</label>
+                            <input type="time" id="p1_time" required>
+                        </div>
+                    </div>
+
+                    <!-- Partner 2 -->
+                    <div>
+                        <h3 style="font-size: 0.9rem; margin-bottom: 15px; color: #7c3aed;">Partner Two (Bride)</h3>
+                        <div class="input-group">
+                            <label>Full Name</label>
+                            <input type="text" placeholder="Enter Name" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Birth Date</label>
+                            <input type="date" id="p2_date" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Birth Time</label>
+                            <input type="time" id="p2_time" required>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn-calculate">Check Compatibility</button>
+            </form>
+        </section>
+
+        <!-- Result Section -->
+        <div id="results">
+            <div class="glass-card score-display">
+                <p style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 2px;">Total Compatibility Score</p>
+                <div class="total-points" id="scoreValue">0</div>
+                <div class="out-of">out of 36</div>
+                <div id="verdictBadge" class="verdict-badge">Good Match</div>
+                
+                <div style="margin-top: 30px; text-align: left;">
+                    <label>Marriage Success Probability</label>
+                    <div class="probability-meter">
+                        <div id="probFill" class="probability-fill" style="width: 0%"></div>
+                    </div>
+                    <p id="probText" style="font-size: 0.85rem; font-weight: 600; color: #718096; text-align: right;">0%</p>
+                </div>
+            </div>
+
+            <div class="grid-inputs">
+                <div class="glass-card">
+                    <h3 style="margin-bottom: 15px; font-family: 'Playfair Display';">Ashtakoot Breakdown</h3>
+                    <table class="guna-table">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Max</th>
+                                <th>Earned</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gunaTableBody">
+                            <!-- Rows via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="glass-card">
+                    <h3 style="margin-bottom: 15px; font-family: 'Playfair Display';">Energy Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="milanChart"></canvas>
+                    </div>
+                    <div id="doshaAlert" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h3 style="margin-bottom: 15px; font-family: 'Playfair Display';">Emotional Insights</h3>
+                <p id="emotionalSummary" style="color: #4A5568; font-size: 0.95rem;"></p>
+            </div>
+        </div>
+
+        <footer class="footer">
+            &copy; 2025 DIVYA-DATA. Crafted for emotional clarity.
+        </footer>
+    </div>
+
+    <script>
+        /** * VEDIC ASTROLOGY ENGINE (Pure JS Implementation)
+         * Note: For 100% accuracy, Ephemeris data is usually needed. 
+         * This algorithm uses simplified Julian Date calculations for Nakshatra approximation.
+         */
+
+        const NAKSHATRAS = [
+            "Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra", 
+            "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni",
+            "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha",
+            "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta", "Shatabhisha",
+            "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"
+        ];
+
+        const RASHIS = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
+
+        // Guna Parameters and Scoring Matrix Logic
+        const ASHTAKOOT_RULES = {
+            varna: { max: 1 },
+            vashya: { max: 2 },
+            tara: { max: 3 },
+            yoni: { max: 4 },
+            maitri: { max: 5 },
+            gana: { max: 6 },
+            bhakoot: { max: 7 },
+            nadi: { max: 8 }
+        };
+
+        // Simplified mapping for Guna properties (Logic-based)
+        function getNakshatraData(date, time) {
+            // This is a dummy seed for calculation based on the input date
+            // In a real production app, you'd use the Swiss Ephemeris.
+            const seed = new Date(`${date}T${time}`).getTime();
+            const index = Math.abs(Math.floor(seed / (1000 * 60 * 60 * 24))) % 27;
+            const rashiIndex = Math.floor(index / 2.25) % 12;
+            
+            return {
+                id: index,
+                name: NAKSHATRAS[index],
+                rashi: RASHIS[rashiIndex],
+                rashiId: rashiIndex,
+                // Assigning Varna based on Rashi
+                varna: [0, 4, 8].includes(rashiIndex) ? 3 : ([1, 5, 9].includes(rashiIndex) ? 2 : ([2, 6, 10].includes(rashiIndex) ? 1 : 0)),
+                nadi: index % 3, // 0: Adi, 1: Madhya, 2: Antya
+                gana: index % 3, // Simplification for demo logic
+                yoni: Math.floor(index / 2) % 14
+            };
+        }
+
+        function calculateMilan(p1, p2) {
+            let points = {
+                varna: 0, vashya: 0, tara: 0, yoni: 0, maitri: 0, gana: 0, bhakoot: 0, nadi: 0
+            };
+
+            // 1. Varna (Work/Nature)
+            if (p1.varna >= p2.varna) points.varna = 1;
+
+            // 2. Vashya (Control)
+            points.vashya = (p1.rashiId === p2.rashiId) ? 2 : 1;
+
+            // 3. Tara (Destiny)
+            let diff = Math.abs(p1.id - p2.id) % 9;
+            if ([3, 5, 7].includes(diff)) points.tara = 1.5;
+            else if ([0, 2, 4, 8].includes(diff)) points.tara = 3;
+
+            // 4. Yoni (Intimacy)
+            points.yoni = (p1.yoni === p2.yoni) ? 4 : (Math.abs(p1.yoni - p2.yoni) < 4 ? 2 : 0);
+
+            // 5. Graha Maitri (Friendship)
+            points.maitri = (p1.rashiId % 4 === p2.rashiId % 4) ? 5 : 2.5;
+
+            // 6. Gana (Temperament)
+            if (p1.gana === p2.gana) points.gana = 6;
+            else if (Math.abs(p1.gana - p2.gana) === 1) points.gana = 3;
+
+            // 7. Bhakoot (Constructive growth)
+            let rDiff = Math.abs(p1.rashiId - p2.rashiId);
+            if ([0, 7, 10, 9].includes(rDiff)) points.bhakoot = 7;
+
+            // 8. Nadi (Health/Progeny)
+            if (p1.nadi !== p2.nadi) points.nadi = 8;
+
+            return points;
+        }
+
+        let myChart = null;
+
+        document.getElementById('milanForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const loader = document.getElementById('loader');
+            const results = document.getElementById('results');
+            
+            loader.style.display = 'flex';
+            results.style.display = 'none';
+
+            setTimeout(() => {
+                const p1 = getNakshatraData(document.getElementById('p1_date').value, document.getElementById('p1_time').value);
+                const p2 = getNakshatraData(document.getElementById('p2_date').value, document.getElementById('p2_time').value);
+                
+                const scores = calculateMilan(p1, p2);
+                const total = Object.values(scores).reduce((a, b) => a + b, 0);
+
+                displayResults(scores, total, p1, p2);
+                
+                loader.style.display = 'none';
+                results.style.display = 'block';
+                window.scrollTo({ top: results.offsetTop - 50, behavior: 'smooth' });
+            }, 1500);
+        });
+
+        function displayResults(scores, total, p1, p2) {
+            document.getElementById('scoreValue').innerText = total.toFixed(1);
+            
+            const badge = document.getElementById('verdictBadge');
+            const probFill = document.getElementById('probFill');
+            const probText = document.getElementById('probText');
+            
+            let probability = (total / 36) * 100;
+            
+            if (total >= 25) {
+                badge.className = 'verdict-badge badge-success';
+                badge.innerText = 'Excellent Match';
+                probability += 10;
+            } else if (total >= 18) {
+                badge.className = 'verdict-badge badge-warning';
+                badge.innerText = 'Average Match';
+            } else {
+                badge.className = 'verdict-badge badge-danger';
+                badge.innerText = 'Challenging Match';
+                probability -= 10;
+            }
+
+            probability = Math.min(Math.max(probability, 5), 98);
+            probFill.style.width = probability + '%';
+            probText.innerText = Math.round(probability) + '% Success Probability';
+
+            // Populate Table
+            const tbody = document.getElementById('gunaTableBody');
+            tbody.innerHTML = '';
+            
+            for (const [key, value] of Object.entries(scores)) {
+                const max = ASHTAKOOT_RULES[key].max;
+                const statusColor = value === max ? '#166534' : (value === 0 ? '#991B1B' : '#92400E');
+                const bgColor = value === max ? '#DCFCE7' : (value === 0 ? '#FEE2E2' : '#FEF3C7');
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="text-transform: capitalize; font-weight: 600;">${key}</td>
+                        <td>${max}</td>
+                        <td><span class="point-pill" style="background: ${bgColor}; color: ${statusColor}">${value}</span></td>
+                    </tr>
+                `;
+            }
+
+            // Dosha Check
+            const doshaBox = document.getElementById('doshaAlert');
+            if (scores.nadi === 0) {
+                doshaBox.innerHTML = `<div style="padding: 15px; background: #FFF1F2; color: #E11D48; border-radius: 12px; font-size: 0.85rem; border: 1px solid #FECDD3;">
+                    <strong>⚠ Nadi Dosha Detected:</strong> Traditional remedies recommended for health & progeny harmony.
+                </div>`;
+            } else if (scores.bhakoot === 0) {
+                doshaBox.innerHTML = `<div style="padding: 15px; background: #FFF7ED; color: #C2410C; border-radius: 12px; font-size: 0.85rem; border: 1px solid #FFEDD5;">
+                    <strong>⚠ Bhakoot Dosha:</strong> Minor ego-clashes predicted. Focus on communication.
+                </div>`;
+            } else {
+                doshaBox.innerHTML = `<div style="padding: 15px; background: #F0FDF4; color: #15803D; border-radius: 12px; font-size: 0.85rem; border: 1px solid #DCFCE7;">
+                    ✨ <strong>No Major Doshas:</strong> Your charts show strong natural synchronicity.
+                </div>`;
+            }
+
+            // Chart Update
+            updateChart(scores);
+
+            // Insights
+            document.getElementById('emotionalSummary').innerText = generateSummary(total, scores, p1, p2);
+        }
+
+        function updateChart(scores) {
+            const ctx = document.getElementById('milanChart').getContext('2d');
+            
+            if (myChart) myChart.destroy();
+
+            myChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Varna', 'Vashya', 'Tara', 'Yoni', 'Maitri', 'Gana', 'Bhakoot', 'Nadi'],
+                    datasets: [{
+                        label: 'Earned Points',
+                        data: Object.values(scores),
+                        backgroundColor: 'rgba(196, 181, 253, 0.4)',
+                        borderColor: '#6D28D9',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#db2777'
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 8,
+                            ticks: { display: false }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function generateSummary(total, scores, p1, p2) {
+            if (total > 28) return `An extraordinary cosmic bond! Being ${p1.name} and ${p2.name} nakshatras, you share deep spiritual resonance. Your Gana and Nadi scores suggest a lifetime of emotional fulfillment and physical vitality.`;
+            if (total > 21) return `A very stable and promising relationship. While there might be minor differences in ${scores.yoni < 2 ? 'intimacy' : 'friendship'}, your shared values and mutual respect will build a beautiful life together.`;
+            if (total >= 18) return `The stars suggest a balanced partnership that requires conscious effort in communication. Focus on your Graha Maitri to overcome the occasional Bhakoot friction.`;
+            return `A challenging path ahead that requires immense patience. The low score in ${scores.nadi === 0 ? 'Nadi' : 'Bhakoot'} suggests emotional volatility. Wisdom and spiritual guidance are recommended before proceeding.`;
+        }
+    </script>
+</body>
+</html>
